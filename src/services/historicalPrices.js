@@ -1,8 +1,8 @@
 const axios = require("axios");
+const API_KEY = process.env.API_KEY;
 
 async function fetchHistoricalPrices() {
-  const url =
-    "https://financialmodelingprep.com/api/v3/historical-price-full/AAPL?apikey=8LL2fsCzkr0lE7LHVZdWf7WiQ1owyG8Z";
+  const url = `https://financialmodelingprep.com/api/v3/historical-price-full/AAPL?apikey=${API_KEY}`;
   const response = await axios.get(url);
 
   // Only return date and close for each historical item
@@ -12,6 +12,9 @@ async function fetchHistoricalPrices() {
         close: item.close,
       }))
     : [];
+  if (historical) {
+    console.log(historical);
+  }
 
   return historical;
 }
