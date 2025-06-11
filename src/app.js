@@ -7,6 +7,7 @@ const searchRoutes = require("./routes/searchRoutes");
 const newsRoutes = require("./routes/newsRoutes");
 const financialRoutes = require("./routes/financialRoutes");
 const valuationRoutes = require("./routes/valuationRoutes");
+const pressReleaseRoutes = require("./routes/pressReleaseRoutes");
 const cors = require("cors");
 
 const app = express();
@@ -19,6 +20,7 @@ app.use("/api/search", searchRoutes);
 app.use("/api/news", newsRoutes);
 app.use("/api/financial", financialRoutes);
 app.use("/api/valuation", valuationRoutes);
+app.use("/api/press-release", pressReleaseRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
