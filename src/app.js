@@ -8,6 +8,7 @@ const newsRoutes = require("./routes/newsRoutes");
 const financialRoutes = require("./routes/financialRoutes");
 const valuationRoutes = require("./routes/valuationRoutes");
 const pressReleaseRoutes = require("./routes/pressReleaseRoutes");
+const historicalEodRoutes = require("./routes/historicalEodRoutes");
 const cors = require("cors");
 
 const app = express();
@@ -21,6 +22,7 @@ app.use("/api/news", newsRoutes);
 app.use("/api/financial", financialRoutes);
 app.use("/api/valuation", valuationRoutes);
 app.use("/api/press-release", pressReleaseRoutes);
+app.use("/api/historical-eod", historicalEodRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
