@@ -5,22 +5,22 @@ async function fetchHistoricalEod(symbol) {
   const url = `https://financialmodelingprep.com/stable/historical-price-eod/full?symbol=${symbol}&apikey=${API_KEY}`;
   const response = await axios.get(url);
 
-  // response.data is already an array of objects
+  // Return array of { date, close }
   return Array.isArray(response.data)
-    ? response.data.map((item) => item.close)
+    ? response.data.map((item) => ({ date: item.date, close: item.close }))
     : [];
 }
 
-async function fetchMultipleHistoricalEod(symbols = []) {
+async function  fetchMultipleHistoricalEod(symbols = []) {
   const results = await Promise.all(
     symbols.map(async (symbol) => {
-      const closes = await fetchHistoricalEod(symbol);
-      return { symbol, closes };
+      const data = await fetchHistoricalEod(symbol);
+      return { symbol, data };
     })
   );
   // Return as { AAPL: [...], MSFT: [...], ... }
   return results.reduce((acc, curr) => {
-    acc[curr.symbol] = curr.closes;
+    acc[curr.symbol] = curr.data;
     return acc;
   }, {});
 }
