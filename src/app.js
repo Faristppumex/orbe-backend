@@ -10,6 +10,7 @@ const valuationRoutes = require("./routes/valuationRoutes");
 const pressReleaseRoutes = require("./routes/pressReleaseRoutes");
 const historicalEodRoutes = require("./routes/historicalEodRoutes");
 const companyOverviewRoutes = require("./routes/companyOverviewRoutes");
+const combinedReportRoutes = require("./routes/combinedReportRoutes");
 const cors = require("cors");
 
 const app = express();
@@ -19,6 +20,7 @@ app.use(cors());
 app.use(express.json());
 
 app.use("/api/profile", profileRoutes);
+app.use("/api/combined-report", combinedReportRoutes);
 app.use("/api/historical", historicalRoutes);
 app.use("/api/search", searchRoutes);
 app.use("/api/news", newsRoutes);
