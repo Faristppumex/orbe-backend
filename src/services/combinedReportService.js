@@ -32,6 +32,7 @@ function preprocessFinancialReport(reportArray) {
 }
 
 // Helper function to select key financial data to reduce token count
+// This function is kept for potential future use or if you switch back.
 function selectKeyFinancialData(fullReport) {
   if (
     !fullReport ||
@@ -40,13 +41,11 @@ function selectKeyFinancialData(fullReport) {
   ) {
     return { info: "No detailed financial data provided or report is empty." };
   }
-  // IMPORTANT: Define what's key for your analysis to reduce token count
-  // These are examples; adjust based on what the AI needs for 'CompanyOverview'
   const keyData = {
     symbol: fullReport.symbol,
     reportedCurrency: fullReport.reportedCurrency,
     fillingDate: fullReport.fillingDate,
-    period: fullReport.period, // Good to include the period of the report
+    period: fullReport.period,
     revenue: fullReport.revenue,
     netIncome: fullReport.netIncome,
     eps: fullReport.eps || fullReport.earningsPerShare,
@@ -57,15 +56,11 @@ function selectKeyFinancialData(fullReport) {
     netCashProvidedByOperatingActivities:
       fullReport.netCashProvidedByOperatingActivities,
     freeCashFlow: fullReport.freeCashFlow,
-    // Add other truly essential fields, but be very selective
   };
-  // Remove undefined keys to keep it clean
   Object.keys(keyData).forEach(
     (key) => keyData[key] === undefined && delete keyData[key]
   );
-
   if (Object.keys(keyData).length <= 4 && fullReport.symbol) {
-    // if only symbol, currency, date, period are left
     return {
       info: `Selected financial highlights for ${fullReport.symbol} (${
         fullReport.period || "N/A"
@@ -78,8 +73,8 @@ function selectKeyFinancialData(fullReport) {
   return keyData;
 }
 
-async function fetchPressReleases(symbol, limit = 5) {
-  // Reduced limit for token management
+async function fetchPressReleases(symbol, limit = 3) {
+  // Keep limit low for tokens
   const url = `https://financialmodelingprep.com/stable/news/press-releases?limit=${limit}&symbols=${symbol}&apikey=${API_KEY}`;
   const response = await axios.get(url);
   return response.data;
@@ -92,10 +87,9 @@ function formatPressReleasesForPrompt(pressReleases) {
   return pressReleases
     .map((pr, index) => {
       const content = pr.text || pr.content || "No content available.";
-      // Provide enough text for sentiment analysis, but be mindful of overall token limits
       return `Press Release ${index + 1} (Date: ${pr.date}):\nTitle: ${
         pr.title
-      }\nText: ${content.substring(0, 500)}...\n---`; // Increased substring slightly for better context
+      }\nText: ${content.substring(0, 400)}...\n---`; // Slightly reduced substring for press releases
     })
     .join("\n\n");
 }
@@ -105,11 +99,8 @@ function formatPressReleasesForPrompt(pressReleases) {
 async function getCombinedAnalysisFromPerplexity(symbol) {
   // 1. Fetch all necessary data
   const rawFinancialReport = await fetchFinancialReport(symbol);
-  const processedFinancialReport =
-    preprocessFinancialReport(rawFinancialReport);
-  const financialDataForPrompt = selectKeyFinancialData(
-    processedFinancialReport
-  );
+  // Use the processed (raw) financial report for the prompt
+  const financialDataForPrompt = preprocessFinancialReport(rawFinancialReport);
 
   const originalPressReleases = await fetchPressReleases(symbol);
   const formattedPressReleasesForAI = formatPressReleasesForPrompt(
@@ -118,7 +109,7 @@ async function getCombinedAnalysisFromPerplexity(symbol) {
 
   // 2. Construct the combined prompt
   const prompt = `
-Here is a selection of financial data for ${symbol}:
+Here is the financial report data for ${symbol}:
 ${JSON.stringify(financialDataForPrompt, null, 2)}
 
 Here are the latest press releases for ${symbol}:
@@ -126,7 +117,7 @@ ${formattedPressReleasesForAI}
 
 Based on all the information provided:
 
-1.  Provide a CompanyOverview based  on the financial report. I need this as a Python-style list of strings assigned to a variable named 'CompanyOverview'. Example: CompanyOverview=['Financial point 1...', 'Financial point 2...', etc]. Only provide the 'CompanyOverview = [...]' part for this.
+1.  Provide a CompanyOverview based on the financial report data. I need this as a Python-style list of strings assigned to a variable named 'CompanyOverview'. Example: CompanyOverview=['Financial point 1...', 'Financial point 2...', etc]. Only provide the 'CompanyOverview = [...]' part for this.
 
 2.  For the press releases provided above, analyze the sentiment of each one (e.g., Positive, Negative, Neutral). Provide these sentiments as a Python-style list of strings assigned to 'PressReleaseSentiments', in the same order as the press releases appear in the input. For example, if there are 3 press releases, the output should be like: PressReleaseSentiments=['Positive', 'Neutral', 'Negative']. Only provide the 'PressReleaseSentiments = [...]' part for this.
 
@@ -141,12 +132,8 @@ Ensure all lists are provided clearly and distinctly, in the specified formats a
     const response = await axios.post(
       "https://api.perplexity.ai/chat/completions",
       {
-        model: "sonar-reasoning-pro", // Or your preferred model like "sonar-pro"
-        messages: [
-          // Using a single user message with the full context.
-          // For complex instructions, sometimes a system prompt helps, but let's start simple.
-          { role: "user", content: prompt },
-        ],
+        model: "sonar-reasoning-pro",
+        messages: [{ role: "user", content: prompt }],
       },
       {
         headers: {
@@ -157,9 +144,7 @@ Ensure all lists are provided clearly and distinctly, in the specified formats a
     );
 
     const rawResponseContent = response.data.choices[0].message.content;
-    // console.log("Raw combined response from Perplexity:", rawResponseContent); // For debugging
 
-    // 3. Parse the combined response
     const companyOverviewPoints = parseListFromString(
       rawResponseContent,
       "CompanyOverview"
@@ -167,7 +152,7 @@ Ensure all lists are provided clearly and distinctly, in the specified formats a
     const pressReleaseSentiments = parseListFromString(
       rawResponseContent,
       "PressReleaseSentiments"
-    ); // Parse the list of sentiment strings
+    );
     const keyCompetitors = parseListFromString(
       rawResponseContent,
       "KeyCompetitors"
@@ -177,21 +162,19 @@ Ensure all lists are provided clearly and distinctly, in the specified formats a
       "KeyCustomers"
     );
 
-    // 4. Combine original press release text with AI sentiments
     const pressReleasesForFrontend = originalPressReleases.map((pr, index) => {
-      // Use the original full text (or a suitably long version) for the frontend
       const originalText = pr.text || pr.content || "No content available.";
       return {
-        text: originalText, // Or pr.title + "\n" + originalText if preferred
-        sentiment: pressReleaseSentiments[index] || "N/A", // Default if AI provides fewer sentiments
-        date: pr.date, // Include date for context
-        title: pr.title, // Include title for context
+        text: originalText,
+        sentiment: pressReleaseSentiments[index] || "N/A",
+        date: pr.date,
+        title: pr.title,
       };
     });
 
     return {
       companyOverview: companyOverviewPoints || [],
-      pressReleases: pressReleasesForFrontend, // Use the newly constructed array
+      pressReleases: pressReleasesForFrontend,
       keyCompetitors: keyCompetitors || [],
       keyCustomers: keyCustomers || [],
     };
@@ -200,19 +183,18 @@ Ensure all lists are provided clearly and distinctly, in the specified formats a
       "Error fetching or processing combined Perplexity AI response:",
       error.response ? error.response.data : error.message
     );
-    // Check for specific error types from Perplexity if available
     let errorDetails = error.message;
     if (error.response && error.response.data && error.response.data.error) {
       errorDetails = error.response.data.error.message || error.message;
       if (error.response.data.error.type === "too_many_prompt_tokens") {
         console.error(
-          "Prompt too long. Consider reducing financial data or press release content/count."
+          "Prompt too long. Consider reducing financial data (e.g., by using selectKeyFinancialData) or press release content/count."
         );
       }
     }
     return {
       companyOverview: [],
-      pressReleases: [], // Ensure this field is initialized on error
+      pressReleases: [],
       keyCompetitors: [],
       keyCustomers: [],
       error: "Failed to get combined analysis from AI.",
@@ -221,24 +203,16 @@ Ensure all lists are provided clearly and distinctly, in the specified formats a
   }
 }
 
-// --- Helper function to parse lists of strings from the response string ---
 function parseListFromString(content, listName) {
   if (typeof content !== "string") return [];
-
   const listStartIndex = content.indexOf(`${listName} = [`);
-  if (listStartIndex === -1) {
-    // console.warn(`Could not find '${listName} = [' in the response.`); // Keep logs minimal
-    return [];
-  }
-
+  if (listStartIndex === -1) return [];
   const arrayContentStart = listStartIndex + `${listName} = [`.length;
   let openBrackets = 1;
   let listEndIndex = -1;
-
   for (let i = arrayContentStart; i < content.length; i++) {
-    if (content[i] === "[") {
-      openBrackets++;
-    } else if (content[i] === "]") {
+    if (content[i] === "[") openBrackets++;
+    else if (content[i] === "]") {
       openBrackets--;
       if (openBrackets === 0) {
         listEndIndex = i;
@@ -246,26 +220,14 @@ function parseListFromString(content, listName) {
       }
     }
   }
-
-  if (listEndIndex === -1) {
-    // console.warn(`Could not find the closing bracket for ${listName} list.`);
-    return [];
-  }
-
+  if (listEndIndex === -1) return [];
   const arrayInnerString = content.substring(arrayContentStart, listEndIndex);
-  const regex = /(['"])((?:(?!\1|\\).|\\.)*)\1/g; // Extracts strings in single or double quotes
+  const regex = /(['"])((?:(?!\1|\\).|\\.)*)\1/g;
   let match;
   const items = [];
   while ((match = regex.exec(arrayInnerString)) !== null) {
     items.push(match[2].replace(/\\'/g, "'").replace(/\\"/g, '"').trim());
   }
-
-  // if (items.length === 0 && arrayInnerString.trim() !== "") { // Log only if content was expected but not parsed
-  //   console.warn(
-  //     `Regex did not find any items in the extracted ${listName} list string:`,
-  //     arrayInnerString
-  //   );
-  // }
   return items;
 }
 
