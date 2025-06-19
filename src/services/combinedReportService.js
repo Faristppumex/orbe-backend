@@ -73,10 +73,11 @@ function selectKeyFinancialData(fullReport) {
   return keyData;
 }
 
-async function fetchPressReleases(symbol, limit = 3) {
+async function fetchPressReleases(symbol, limit = 5) {
   // Keep limit low for tokens
   const url = `https://financialmodelingprep.com/stable/news/press-releases?limit=${limit}&symbols=${symbol}&apikey=${API_KEY}`;
   const response = await axios.get(url);
+  console.log(response.data);
   return response.data;
 }
 
@@ -110,7 +111,7 @@ async function getCombinedAnalysisFromPerplexity(symbol) {
   // 2. Construct the combined prompt
   const prompt = `
 Here is the financial report data for ${symbol}:
-${JSON.stringify(financialDataForPrompt, null, 2)}
+${JSON.stringify(financialDataForPrompt, null, 0)}
 
 Here are the latest press releases for ${symbol}:
 ${formattedPressReleasesForAI}
@@ -121,7 +122,9 @@ Based on all the information provided:
 
 2.  For the press releases provided above, analyze the sentiment of each one (e.g., Positive, Negative, Neutral). Provide these sentiments as a Python-style list of strings assigned to 'PressReleaseSentiments', in the same order as the press releases appear in the input. For example, if there are 3 press releases, the output should be like: PressReleaseSentiments=['Positive', 'Neutral', 'Negative']. Only provide the 'PressReleaseSentiments = [...]' part for this.
 
-3.  If possible, provide a list of top 5 (minimum) key competitors assigned to 'KeyCompetitors'. Example: KeyCompetitors=['Competitor A', 'Competitor B', ...].
+3.   For key competitors, provide a Python-style list of dictionaries assigned to 'KeyCompetitors', where each dictionary contains 'name' (company name) and 'symbol' (stock symbol, or null if not available). Example:
+KeyCompetitors=[{'name': 'Apple', 'symbol': 'AAPL'}, {'name': 'Google (Alphabet)', 'symbol': 'GOOGL'}]
+Only provide the 'KeyCompetitors = [...]' part for this.
 
 4.  If possible, provide a list of top 5 (minimum) key customers assigned to 'KeyCustomers'. Example: KeyCustomers=['Customer X', 'Customer Y', ...].
 
