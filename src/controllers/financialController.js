@@ -76,7 +76,7 @@ async function getFinancialData(req, res) {
     const apiResponse = await fetchFinancialData(symbol);
     // Ensure apiResponse is an array before attempting to sort/transform
     if (!Array.isArray(apiResponse)) {
-      console.error("API response is not an array:", apiResponse);
+      // console.error("API response is not an array:", apiResponse);
       return res
         .status(500)
         .json({ error: "Invalid data format from financial service" });

@@ -23,7 +23,7 @@ async function fetchFinancialData(symbol = "AAPL") {
 
   const url = `http://orbe360.ai:8080/time-series/${symbol}?metrics=${metrics}&start_year=${startYear}`;
   const response = await axios.get(url);
-  console.log(response);
+  // console.log(response);
   return response.data;
 }
 

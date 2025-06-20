@@ -30,8 +30,6 @@ Only return the JSON object.
 
   // Try to parse the JSON from the response
   const content = response.data.choices[0].message.content;
-  console.log("perplex");
-  console.log(content);
   try {
     // Find the first JSON object in the response
     const match = content.match(/\{[\s\S]*\}/);

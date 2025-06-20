@@ -17,9 +17,6 @@ function preprocessFinancialReport(reportArray) {
   if (reportArray.length === 0) {
     return {}; // Return empty object if array is empty
   }
-  // If it's an array of reports (e.g. quarterly), FMP often returns the latest first.
-  // For a single FY report, it might be an array with one object.
-  // We'll assume for now we want the first element if it's an array, or the object itself.
   const reportData = Array.isArray(reportArray) ? reportArray[0] : reportArray;
 
   const processedReport = {};
@@ -32,7 +29,6 @@ function preprocessFinancialReport(reportArray) {
 }
 
 // Helper function to select key financial data to reduce token count
-// This function is kept for potential future use or if you switch back.
 function selectKeyFinancialData(fullReport) {
   if (
     !fullReport ||
@@ -77,7 +73,6 @@ async function fetchPressReleases(symbol, limit = 5) {
   // Keep limit low for tokens
   const url = `https://financialmodelingprep.com/stable/news/press-releases?limit=${limit}&symbols=${symbol}&apikey=${API_KEY}`;
   const response = await axios.get(url);
-  console.log(response.data);
   return response.data;
 }
 
@@ -90,7 +85,7 @@ function formatPressReleasesForPrompt(pressReleases) {
       const content = pr.text || pr.content || "No content available.";
       return `Press Release ${index + 1} (Date: ${pr.date}):\nTitle: ${
         pr.title
-      }\nText: ${content.substring(0, 400)}...\n---`; // Slightly reduced substring for press releases
+      }\nText: ${content.substring(0, 400)}...\n---`;
     })
     .join("\n\n");
 }
@@ -182,10 +177,10 @@ Ensure all lists are provided clearly and distinctly, in the specified formats a
       keyCustomers: keyCustomers || [],
     };
   } catch (error) {
-    console.error(
-      "Error fetching or processing combined Perplexity AI response:",
-      error.response ? error.response.data : error.message
-    );
+    // console.error(
+    //   "Error fetching or processing combined Perplexity AI response:",
+    //   error.response ? error .response.data : error.message
+    // );
     let errorDetails = error.message;
     if (error.response && error.response.data && error.response.data.error) {
       errorDetails = error.response.data.error.message || error.message;

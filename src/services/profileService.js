@@ -11,13 +11,15 @@ async function fetchProfile(symbol) {
   const data = response.data;
 
   // If data is an array and has at least one profile
-  if (Array.isArray(data) && data.length > 0) {
-    const profile = data[0];
-    // Fetch executives from Perplexity
-    const executives = await fetchExecutivesFromPerplexity(profile);
-    // Merge and return
-    return [{ ...profile, ...executives }];
-  }
+  // if (Array.isArray(data) && data.length > 0) {
+  //   const profile = data[0];
+  //   // Fetch executives from Perplexity
+  //   // const executives = (await fetchExecutivesFromPerplexity(profile))
+  //   // Merge and return
+  //   console.log("Fetched executives:", executives);
+  //   console.log("Profile data:", profile);
+  // return data
+  // }
   return data;
 }
 
