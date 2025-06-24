@@ -130,7 +130,7 @@ Ensure all lists are provided clearly and distinctly, in the specified formats a
     const response = await axios.post(
       "https://api.perplexity.ai/chat/completions",
       {
-        model: "sonar-reasoning-pro",
+        model: "sonar-pro",
         messages: [{ role: "user", content: prompt }],
       },
       {
