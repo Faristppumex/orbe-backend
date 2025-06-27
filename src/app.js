@@ -25,7 +25,7 @@ app.use("/api/profile", profileRoutes);
 app.use("/api/combined-report", combinedReportRoutes);
 app.use("/api/historical", historicalRoutes);
 app.use("/api/search", searchRoutes);
-app.use("/api/news", newsRoutes);
+app.use("/api/news", newsRoutes);   
 app.use("/api/financial", financialRoutes);
 app.use("/api/valuation", valuationRoutes);
 app.use("/api/press-release", pressReleaseRoutes);

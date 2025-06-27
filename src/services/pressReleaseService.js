@@ -62,6 +62,7 @@ Given the recent news about ${symbol}extract and return only the "Key Detail" as
   const messageContentArray = response.data.choices[0].message.content;
 
   if (!Array.isArray(messageContentArray)) {
+    console.log(messageContentArray);
     console.error(
       "Perplexity AI response for press releases is not an array:"
       // messageContentArray

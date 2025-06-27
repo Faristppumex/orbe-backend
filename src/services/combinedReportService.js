@@ -69,7 +69,7 @@ function selectKeyFinancialData(fullReport) {
   return keyData;
 }
 
-async function fetchPressReleases(symbol, limit = 5) {
+async function fetchPressReleases(symbol, limit = 7) {
   // Keep limit low for tokens
   const url = `https://financialmodelingprep.com/stable/news/press-releases?limit=${limit}&symbols=${symbol}&apikey=${API_KEY}`;
   const response = await axios.get(url);
